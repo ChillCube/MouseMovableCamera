@@ -1,6 +1,11 @@
 extends Camera2D
 class_name MouseMoveableCamera2D
 
+@export_group("enablers")
+@export var zoom_enabled : bool = true;
+@export var movement_enabled : bool = true;
+
+@export_group("zoom_settings")
 @export var pan_smoothing: float = 12.0
 @export var zoom_smoothing: float = 10.0
 @export var zoom_step: float = 0.15
@@ -24,12 +29,15 @@ func _unhandled_input(event: InputEvent) -> void:
 			_pan_pressed = event.pressed
 			Input.set_default_cursor_shape(Input.CURSOR_DRAG if event.pressed else Input.CURSOR_ARROW)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
-			_target_zoom = clamp(_target_zoom * (1.0 + zoom_step), zoom_min, zoom_max)
+			if zoom_enabled:
+				_target_zoom = clamp(_target_zoom * (1.0 + zoom_step), zoom_min, zoom_max)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
-			_target_zoom = clamp(_target_zoom / (1.0 + zoom_step), zoom_min, zoom_max)
+			if zoom_enabled:
+				_target_zoom = clamp(_target_zoom / (1.0 + zoom_step), zoom_min, zoom_max)
 
 	elif event is InputEventMouseMotion and _pan_pressed:
-		_target_position -= event.relative / zoom
+		if movement_enabled:
+			_target_position -= event.relative / zoom
 
 func _process(delta: float) -> void:
 	position = position.lerp(_target_position, clamp(pan_smoothing * delta, 0.0, 1.0))
